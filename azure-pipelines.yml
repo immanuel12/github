@@ -41,7 +41,7 @@ steps:
   - task: Npm@1
     inputs:
       command: 'publish'
-      workingDir: 'poc'
+      workingDir: 'github'
       publishEndpoint: 'npmconn'
     displayName: 'Publish'
 
@@ -51,7 +51,7 @@ steps:
       containerRegistry: '$(dockerRegistryServiceConnection)'
       repository: '$(imageRepository)'
       command: 'buildAndPush'
-      Dockerfile: 'poc/Dockerfile'  # Pastikan path ini sesuai
+      Dockerfile: 'Dockerfile'  # Pastikan path ini sesuai
       tags: |
         latest
         $(tag)
