@@ -2,10 +2,6 @@ trigger:
   branches:
     include:
       - main  # Jalankan pipeline ketika ada perubahan di branch main
-  
-  paths:
-    include:
-      - github  # Hanya jalankan pipeline jika ada perubahan di folder poc
 
 pool: agentpool  # Menggunakan agen yang dikelola oleh Sendiri
 
