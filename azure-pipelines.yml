@@ -41,7 +41,6 @@ steps:
   - task: Npm@1
     inputs:
       command: 'publish'
-      workingDir: 'github'
       publishEndpoint: 'npmconn'
     displayName: 'Publish'
 
