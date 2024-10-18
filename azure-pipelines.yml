@@ -1,0 +1,62 @@
+trigger:
+  branches:
+    include:
+      - main  # Jalankan pipeline ketika ada perubahan di branch main
+  
+  paths:
+    include:
+      - github  # Hanya jalankan pipeline jika ada perubahan di folder poc
+
+pool: agentpool  # Menggunakan agen yang dikelola oleh Sendiri
+
+variables:
+  dockerRegistryServiceConnection: 'devops-poc'  # Ganti dengan service connection ke Docker Hub
+  imageRepository: 'nuek21/github'  # Ganti dengan nama repository Docker Hub kamu
+  tag: '$(Build.BuildId)'  # Menggunakan BuildId sebagai tag versi image
+  containerName: 'node-app-github'  # Nama container untuk menjalankan aplikasi
+  npmServiceConnection: 'npmconn' 
+
+steps:
+  # Langkah 1: Checkout repository
+  - checkout: self
+
+  # Langkah 2: Install Node.js dependencies
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  - task: npmAuthenticate@0
+    inputs:
+      workingFile: 'github/.npmrc'
+
+  # Langkah 3: Install dependencies dan build aplikasi
+  # - task: Npm@1
+  #   inputs:
+  #     command: 'install'
+  #     workingDir: 'poc'
+  #     customEndpoint: 'npmconn'
+  #   displayName: 'Npm Install'
+
+  - task: Npm@1
+    inputs:
+      command: 'publish'
+      workingDir: 'poc'
+      publishEndpoint: 'npmconn'
+    displayName: 'Publish'
+
+  # Langkah 4: Build Docker image dan push ke Docker Hub
+  - task: Docker@2
+    inputs:
+      containerRegistry: '$(dockerRegistryServiceConnection)'
+      repository: '$(imageRepository)'
+      command: 'buildAndPush'
+      Dockerfile: 'poc/Dockerfile'  # Pastikan path ini sesuai
+      tags: |
+        latest
+        $(tag)
+
+  # Langkah 5: Jalankan container dengan port 3002
+  - script: |
+      docker run -d -p 3002:3002 --name $(containerName) $(imageRepository):$(tag)
+    displayName: 'Run Docker Container on Port 3002'
